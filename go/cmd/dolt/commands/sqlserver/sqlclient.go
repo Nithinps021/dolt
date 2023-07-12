@@ -46,6 +46,7 @@ const (
 	sqlClientDualFlag     = "dual"
 	SqlClientQueryFlag    = "query"
 	sqlClientResultFormat = "result-format"
+	sqlClientBranchFlag   = "branch"
 )
 
 var sqlClientDocs = cli.CommandDocumentationContent{
@@ -84,6 +85,7 @@ func (cmd SqlClientCmd) Docs() *cli.CommandDocumentation {
 func (cmd SqlClientCmd) ArgParser() *argparser.ArgParser {
 	ap := SqlServerCmd{}.ArgParserWithName(cmd.Name())
 	ap.SupportsFlag(sqlClientDualFlag, "d", "Causes this command to spawn a dolt server that is automatically connected to.")
+	ap.SupportsFlag(sqlClientBranchFlag, "b", "Will switch to branch where the query needs to be executed")
 	ap.SupportsString(SqlClientQueryFlag, "q", "string", "Sends the given query to the server and immediately exits.")
 	ap.SupportsString(commands.UseDbFlag, "", "db_name", fmt.Sprintf("Selects the given database before executing a query. "+
 		"By default, uses the current folder's name. Must be used with the --%s flag.", SqlClientQueryFlag))
@@ -170,6 +172,11 @@ func (cmd SqlClientCmd) Exec(ctx context.Context, commandStr string, args []stri
 	query, hasQuery := apr.GetValue(SqlClientQueryFlag)
 	dbToUse, hasUseDb := apr.GetValue(commands.UseDbFlag)
 	resultFormat, hasResultFormat := apr.GetValue(sqlClientResultFormat)
+	branchToUse, hasBranch := apr.GetValue(sqlClientBranchFlag)
+	if hasBranch && !hasQuery && !hasUseDb {
+		cli.PrintErrln(color.RedString(fmt.Sprintf("--%s may only be used with --%s and --%s",sqlClientBranchFlag,commands.UseDbFlag, SqlClientQueryFlag)))
+		return 1
+	}
 	if !hasQuery && hasUseDb {
 		cli.PrintErrln(color.RedString(fmt.Sprintf("--%s may only be used with --%s", commands.UseDbFlag, SqlClientQueryFlag)))
 		return 1
