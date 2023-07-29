@@ -548,7 +548,6 @@ func runMain() int {
 		}
 
 		lateBind, err := buildLateBinder(ctx, dEnv.FS, mrEnv, creds, apr, subcommandName, verboseEngineSetup)
-
 		if err != nil {
 			cli.PrintErrln(color.RedString("%v", err))
 			return 1
@@ -558,6 +557,9 @@ func runMain() int {
 		if err != nil {
 			cli.PrintErrln(color.RedString("Unexpected Error: %v", err))
 			return 1
+		}
+		if branchName, hasBranch:= apr.GetValue(cli.BranchParam); hasBranch{
+			swithcBranch(ctx,"checkout",[]string{branchName},dEnv,cliCtx)
 		}
 	} else {
 		if args[0] != subcommandName {
@@ -679,8 +681,15 @@ var doc = cli.CommandDocumentationContent{
 	LongDesc:  `Dolt comprises of multiple subcommands that allow users to import, export, update, and manipulate data with SQL.`,
 
 	Synopsis: []string{
-		"<--data-dir=<path>> subcommand <subcommand arguments>",
+		"<--branch=<name>> <--data-dir=<path>> subcommand <subcommand arguments>",
 	},
+}
+
+func swithcBranch(ctx context.Context, commandStr string, args []string, dEnv *env.DoltEnv, cliCtx cli.CliContext) int {
+	var chekoutCmd commands.CheckoutCmd
+	chekoutCmd.Exec(ctx,"checkout",[]string{"dev"},dEnv, cliCtx)
+	cli.PrintErrln("branch argument")
+	return 0;
 }
 
 func seedGlobalRand() {
@@ -732,6 +741,7 @@ func buildGlobalArgs() *argparser.ArgParser {
 	ap := argparser.NewArgParserWithVariableArgs("dolt")
 
 	ap.SupportsString(cli.UserFlag, "u", "user", fmt.Sprintf("Defines the local superuser (defaults to `%v`). If the specified user exists, will take on permissions of that user.", commands.DefaultUser))
+	ap.SupportsString(cli.BranchParam, "b","branch","helps to checkout to different branch fir")
 	ap.SupportsString(cli.PasswordFlag, "p", "password", "Defines the password for the user. Defaults to empty string.")
 	ap.SupportsString(cli.HostFlag, "", "host", "Defines the host to connect to.")
 	ap.SupportsInt(cli.PortFlag, "", "port", "Defines the port to connect to. Only used when the --host flag is also provided. Defaults to `3306`.")
