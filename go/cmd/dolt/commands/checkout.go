@@ -33,6 +33,7 @@ import (
 	"github.com/dolthub/dolt/go/libraries/doltcore/ref"
 	"github.com/dolthub/dolt/go/libraries/utils/argparser"
 	"github.com/dolthub/dolt/go/libraries/utils/filesys"
+	"github.com/dolthub/go-mysql-server/sql"
 )
 
 var checkoutDocs = cli.CommandDocumentationContent{
@@ -181,6 +182,10 @@ func (cmd CheckoutCmd) Exec(ctx context.Context, commandStr string, args []strin
 	return 0
 }
 
+func (cmd CheckoutCmd) switchBranchGlobal(queryEngine cli.Queryist, sqlCtx *sql.Context, branchTrack bool, dEnv *env.DoltEnv, branchName string){
+
+}
+ 
 // generateCheckoutSql returns the query that will call the `DOLT_CHECKOUT` stored procedure.
 func generateCheckoutSql(args []string) (string, error) {
 	var buffer bytes.Buffer
